@@ -1,13 +1,24 @@
 " These python keywords should not have extra newline at indentation level 0
 let w:slimux_python_allowed_indent0 = ["elif", "else", "except", "finally"]
 
+function! ShiftLeft(text, num)
+    let l:result = substitute(a:text, '^\s\{,' . a:num . '}', "", "g")
+    let l:result = substitute(l:result, '\n\zs\s\{,' . a:num . '}', "", "g")
+    return l:result
+endfunction
 
 function! SlimuxEscape_python(text)
+  " Remove Indent according to
+
+  let l:indent_str = matchstr(a:text, '^\s*')
+  let l:indent_str = substitute(l:indent_str, '\t', repeat(' ', &tabstop), 'g')
+  let l:shifted_text = ShiftLeft(a:text, len(l:indent_str))
+
   "" Check if last line is empty in multiline selections
-  let l:last_line_empty = match(a:text,'\n\W*\n$') 
+  let l:last_line_empty = match(l:shifted_text,'\n\W*\n$')
 
   "" Remove all empty lines and use soft linebreaks
-  let no_empty_lines = substitute(a:text, '\n\s*\ze\n', "", "g")
+  let no_empty_lines = substitute(l:shifted_text, '\n\s*\ze\n', "", "g")
   let no_empty_lines = substitute(no_empty_lines, "\n", "", "g")
 
   "" See if any non-empty lines sent at all
