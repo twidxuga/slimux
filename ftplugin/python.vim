@@ -1,18 +1,31 @@
 " These python keywords should not have extra newline at indentation level 0
 let w:slimux_python_allowed_indent0 = ["elif", "else", "except", "finally"]
 
-function! ShiftLeft(text, num)
-    let l:result = substitute(a:text, '^\s\{,' . a:num . '}', "", "g")
-    let l:result = substitute(l:result, '\n\zs\s\{,' . a:num . '}', "", "g")
-    return l:result
+function! s:ShiftLeft(text, num)
+  let l:result = substitute(a:text, '^\s\{,' . a:num . '}', "", "g")
+  let l:result = substitute(l:result, '\n\zs\s\{,' . a:num . '}', "", "g")
+  return l:result
+endfunction
+
+function! s:CheckLeastIndent(text)
+  let lines = split(a:text, '\n')
+  let num_indent = len(a:text)
+  for line in lines
+      let indent = matchstr(line, '^\s*')
+      let new_indent = len(indent)
+      if new_indent > 0 && new_indent < num_indent
+          let num_indent = new_indent
+      endif
+  endfor
+  return num_indent
 endfunction
 
 function! SlimuxEscape_python(text)
   " Remove Indent according to
 
-  let l:indent_str = matchstr(a:text, '^\s*')
-  let l:indent_str = substitute(l:indent_str, '\t', repeat(' ', &tabstop), 'g')
-  let l:shifted_text = ShiftLeft(a:text, len(l:indent_str))
+  let notab_text = substitute(a:text, '\t', repeat(' ', &tabstop), 'g')
+  let num_indent = s:CheckLeastIndent(notab_text)
+  let l:shifted_text = s:ShiftLeft(notab_text, num_indent)
 
   "" Check if last line is empty in multiline selections
   let l:last_line_empty = match(l:shifted_text,'\n\W*\n$')
