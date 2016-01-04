@@ -2,8 +2,10 @@
 let w:slimux_python_allowed_indent0 = ["elif", "else", "except", "finally"]
 
 function! s:ShiftLeft(text, num)
-  let l:result = substitute(a:text, '^\s\{,' . a:num . '}', "", "g")
-  let l:result = substitute(l:result, '\n\zs\s\{,' . a:num . '}', "", "g")
+  if a:num <= 0
+      return a:text
+  endif
+  let l:result = substitute(a:text, '\v(^|\r?\n)\zs\s{1,' . a:num . '}', "", "g")
   return l:result
 endfunction
 
@@ -11,9 +13,12 @@ function! s:CheckLeastIndent(text)
   let lines = split(a:text, '\n')
   let num_indent = len(a:text)
   for line in lines
+      if match(line, '^\s*$') >= 0
+          continue
+      endif
       let indent = matchstr(line, '^\s*')
       let new_indent = len(indent)
-      if new_indent > 0 && new_indent < num_indent
+      if new_indent >= 0 && new_indent < num_indent
           let num_indent = new_indent
       endif
   endfor
