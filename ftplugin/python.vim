@@ -1,3 +1,10 @@
+" Options:
+" 1. g:slimux_python_use_ipython -- set to `1` to enable ipython support
+"    (mainly deal with indentation problems), default to `0`.
+" 2. g:slimux_python_press_enter -- to press enter to execute python code or
+"    not, default to `1`.
+
+
 " These python keywords should not have extra newline at indentation level 0
 let w:slimux_python_allowed_indent0 = ["elif", "else", "except", "finally"]
 
@@ -7,6 +14,10 @@ endif
 
 if g:slimux_python_use_ipython == 1
     let g:slimux_python_paste_options = "-p"
+endif
+
+if !exists('g:slimux_python_press_enter')
+    let g:slimux_python_press_enter = 1
 endif
 
 function! s:ShiftLeft(text, num)
@@ -92,11 +103,8 @@ function! SlimuxEscape_python(text)
 
   let l:result = join(l:processed_lines,"")
 
-  "" Return the processed lines
-  if !l:at_indent0 && l:last_line_empty >= 0
-      " We ended at indentation and last line was empty
-      let l:result .= ""
-  elseif g:slimux_python_use_ipython && l:at_indent0 && l:last_line_empty < 0 && len(l:non_processed_lines) > 1
+  " add line break to ensure that the code can be executed in REPL
+  if len(l:non_processed_lines) > 1
       let l:result .= ""
   endif
 
@@ -104,6 +112,8 @@ function! SlimuxEscape_python(text)
 endfunction
 
 function! SlimuxPost_python(target_pane)
-    call system("tmux send-keys -t " . a:target_pane . " Enter")
+    if g:slimux_python_press_enter == 1
+        call system("tmux send-keys -t " . a:target_pane . " Enter")
+    endif
 endfunction
 
