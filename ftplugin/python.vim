@@ -105,7 +105,7 @@ function! SlimuxEscape_python(text)
 
   " add line break to ensure that the code can be executed in REPL
   if len(l:non_processed_lines) > 1
-      let l:result .= ""
+      let l:result .= """
   endif
 
   return l:result
